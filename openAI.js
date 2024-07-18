@@ -3,14 +3,14 @@ const fs = require("fs");
 const OpenAI = require("openai");
 const readline = require("readline");
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI();
 
 let threadId = null;
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+// const rl = readline.createInterface({
+//   input: process.stdin,
+//   output: process.stdout,
+// });
 
 const sendMessage = async (content) => {
   try {
@@ -53,7 +53,7 @@ const sendMessage = async (content) => {
           console.log(citations.join("\n"));
         }
       });
-    promptUser();
+    // promptUser();
   } catch (error) {
     console.error("Error sending message:", error);
   }
@@ -93,10 +93,10 @@ const createThread = async () => {
   }
 };
 
-const promptUser = () => {
-  rl.question("You: ", (input) => {
-    sendMessage(input);
-  });
-};
+// const promptUser = () => {
+//   rl.question("You: ", (input) => {
+//     sendMessage(input);
+//   });
+// };
 
 createThread();
