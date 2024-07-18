@@ -1,16 +1,15 @@
 const express = require("express");
 const { createThread, sendMessage } = require("./openAI");
+const cors = require("cors");
 
 const app = express();
 const port = 8080;
-
+app.use(cors());
 app.use(express.json());
 
 app.post("/chat", async (req, res) => {
   const { imageUrl } = req.body;
-  if (!imageUrl) {
-    return res.status(400).json({ error: "imageUrl is required." });
-  }
+
   try {
     const thread = await createThread(imageUrl);
 
@@ -24,8 +23,9 @@ app.post("/chat", async (req, res) => {
 
 app.post("/chat/message", async (req, res) => {
   const { imageUrl, content, threadID } = req.body;
+  console.log(imageUrl, content, threadID);
   if (!content) {
-    return res.status(400).json({ error: "text is required." });
+    return res.status(400).json({ error: "content is required." });
   }
   if (!threadID) {
     return res
