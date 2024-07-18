@@ -5,14 +5,11 @@ const readline = require("readline");
 
 const openai = new OpenAI();
 
-let threadId = null;
+const sendMessage = async (imageUrl, content, threadId) => {
+  let answer;
+  let answerCitations;
+  let err;
 
-// const rl = readline.createInterface({
-//   input: process.stdin,
-//   output: process.stdout,
-// });
-
-const sendMessage = async (content) => {
   try {
     const response = await openai.beta.threads.messages.create(threadId, {
       role: "user",
@@ -49,20 +46,21 @@ const sendMessage = async (content) => {
             index++;
           }
 
-          console.log(text.value);
-          console.log(citations.join("\n"));
+          answer = text.value;
+          answerCitations = citations.join("\n");
         }
       });
-    // promptUser();
   } catch (error) {
-    console.error("Error sending message:", error);
+    err = error;
   }
+
+  return { answer, answerCitations, err };
 };
 
-const createThread = async () => {
+const createThread = async (imageUrl) => {
   try {
     const file = await openai.files.create({
-      file: fs.createReadStream("./bill.png"),
+      file: fs.createReadStream(imageUrl),
       purpose: "assistants",
     });
 
@@ -86,17 +84,13 @@ const createThread = async () => {
       ],
     });
 
-    threadId = thread.id;
-    sendMessage("내 전기 요금 고지서를 요약해줘");
+    return thread.id;
   } catch (error) {
     console.error("Error creating thread:", error);
   }
 };
 
-// const promptUser = () => {
-//   rl.question("You: ", (input) => {
-//     sendMessage(input);
-//   });
-// };
-
-createThread();
+module.exports = {
+  createThread,
+  sendMessage,
+};
