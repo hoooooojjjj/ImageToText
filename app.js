@@ -35,7 +35,11 @@ app.post("/chat/message", async (req, res) => {
   try {
     const response = await sendMessage(imageUrl, content, threadID);
     console.log(response);
-    res.json({ message: "Message sent successfully.", response });
+    if (response) {
+      res.json({ message: "Message sent successfully.", response });
+    } else {
+      res.status(503).json({ error: "ai does'nt send message." });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to send message." });
