@@ -5,18 +5,20 @@ const readline = require("readline");
 
 const openai = new OpenAI();
 
-const sendMessage = async (imageUrl, content, threadId) => {
+const sendMessage = async (imageUrl, content, threadId, isCreateThread) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await openai.beta.threads.messages.create(threadId, {
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text: content,
-          },
-        ],
-      });
+      if (!isCreateThread) {
+        const response = await openai.beta.threads.messages.create(threadId, {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: content,
+            },
+          ],
+        });
+      }
 
       const stream = openai.beta.threads.runs
         .stream(threadId, {
@@ -43,9 +45,6 @@ const sendMessage = async (imageUrl, content, threadId) => {
               }
               index++;
             }
-
-            console.log(text.value);
-            console.log(citations.join("\n"));
             resolve({
               answer: text.value,
               answerCitations: citations.join("\n"),
@@ -79,7 +78,7 @@ const createThread = async (imageUrl) => {
             },
             {
               type: "text",
-              text: "내 전기 요금 고지서야",
+              text: "내 전기 요금 고지서야, 이 고지서를 분석해줘.",
             },
           ],
         },

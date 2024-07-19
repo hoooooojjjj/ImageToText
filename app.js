@@ -12,9 +12,17 @@ app.post("/chat", async (req, res) => {
 
   try {
     const thread = await createThread(imageUrl);
-
-    console.log(thread);
-    res.json({ message: "Thread created successfully.", thread });
+    const response = await sendMessage("", "", thread, true);
+    console.log(response);
+    if (response) {
+      res.json({
+        message: "Thread created and Message sent successfully.",
+        thread,
+        response,
+      });
+    } else {
+      res.status(503).json({ error: "ai does'nt send message." });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to create thread." });
@@ -23,7 +31,6 @@ app.post("/chat", async (req, res) => {
 
 app.post("/chat/message", async (req, res) => {
   const { imageUrl, content, threadID } = req.body;
-  console.log(imageUrl, content, threadID);
   if (!content) {
     return res.status(400).json({ error: "content is required." });
   }
