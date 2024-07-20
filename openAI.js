@@ -22,7 +22,7 @@ const convertToWebpBuffer = async (buffer) => {
 // 함수는 form-data를 사용하여 이미지를 버퍼에서 OpenAI API로 업로드
 const uploadImageToOpenAI = async (buffer) => {
   const form = new FormData();
-  console.log("buffer", buffer);
+
   form.append("file", buffer, { filename: "image.webp" });
   form.append("purpose", "assistants");
 
@@ -38,7 +38,7 @@ const uploadImageToOpenAI = async (buffer) => {
 };
 
 // assistants 대화 Thread 생성
-const createThread = async (imageUrl) => {
+const createThread = async (imageUrl, billImgToJson) => {
   // Fetch the image as a buffer
   const imageBuffer = await fetchImageBuffer(imageUrl);
 
@@ -64,7 +64,7 @@ const createThread = async (imageUrl) => {
             },
             {
               type: "text",
-              text: "내 전기 요금 고지서야, 이 고지서를 분석해줘.",
+              text: `첨부된 이미지는 내 전기 요금 고지서야, 그리고 ${billImgToJson}는 내 전기 요금 고지서 이미지를 텍스트로 변환한  JSON이야. 첨부된 이미지를 JSON을 통해서 읽어보면 첨부된 이미지에 어떤 정보가 있는지 해석하기 편할 거야. 이제 내 전기 요금 고지서에 대해 요약해주고, 내가 또 다른 질문을 이어가면 답변해줘.`,
             },
           ],
         },
@@ -81,6 +81,7 @@ const createThread = async (imageUrl) => {
 const sendMessage = async (imageUrl, content, threadId, isCreateThread) => {
   return new Promise(async (resolve, reject) => {
     try {
+      // 처음 대화 스레드를 생성할 때는 메세지를 보내지 않고 답변만 받음
       if (!isCreateThread) {
         const response = await openai.beta.threads.messages.create(threadId, {
           role: "user",
@@ -93,6 +94,7 @@ const sendMessage = async (imageUrl, content, threadId, isCreateThread) => {
         });
       }
 
+      // 메세지에 대한 답변 반환
       const stream = openai.beta.threads.runs
         .stream(threadId, {
           assistant_id: "asst_tNqwuLVWp7WJ3S69BVSPn1P9",

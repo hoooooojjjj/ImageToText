@@ -17,10 +17,7 @@ const convertToPngBuffer = async (buffer) => {
 };
 
 // 파일 업로드를 통한 OCR 요청
-async function requestWithFile() {
-  const imageUrl =
-    "https://firebasestorage.googleapis.com/v0/b/kkeobi-f29da.appspot.com/o/billImg%2FdzrCBVc2erQFOlZnoEOSACPikxy1%2F%E1%84%8C%E1%85%A5%E1%86%AB%E1%84%80%E1%85%B5%E1%84%8B%E1%85%AD%E1%84%80%E1%85%B3%E1%86%B7%20%E1%84%80%E1%85%A9%E1%84%8C%E1%85%B5%E1%84%89%E1%85%A5%20%E1%84%90%E1%85%A6%E1%86%B7%E1%84%91%E1%85%B3%E1%86%AF%E1%84%85%E1%85%B5%E1%86%BA.png?alt=media&token=79f767c0-0b86-4fed-b652-c706c4fc2c1e";
-
+async function requestWithFile(imageUrl) {
   try {
     // Step 1: Fetch the image as a buffer
     const imageBuffer = await fetchImageBuffer(imageUrl);
@@ -34,6 +31,7 @@ async function requestWithFile() {
         {
           format: "png", // 파일 포맷
           name: "elec_bill", // 파일 이름
+          templateIds: [31041], // 템플릿 ID
         },
       ],
       requestId: "unique-request-id", // 유니크한 문자열
@@ -61,15 +59,16 @@ async function requestWithFile() {
 
     // 응답 처리
     if (res.status === 200) {
-      console.log(
-        "requestWithFile response:",
-        res.data.images[0].fields
-        // res.data.images[0].tables[0].cells
-      );
+      const data = {};
+      res.data.images[0].fields.forEach((field) => {
+        data[field.name] = field.inferText;
+      });
+      return data;
     }
   } catch (error) {
     console.warn("requestWithFile error", error.response);
+    return error;
   }
 }
 
-requestWithFile();
+module.exports = requestWithFile;
