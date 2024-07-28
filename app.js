@@ -17,12 +17,27 @@ app.use(
 app.options(
   "*",
   cors({
-    origin: ["http://localhost:3000/", "https://kkeobi.vercel.app/"],
+    origin: ["http://localhost:3000", "https://kkeobi.vercel.app"],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: false,
     optionsSuccessStatus: 204,
   })
 );
+
+const allowedOrigins = ["http://localhost:3000", "https://kkeobi.vercel.app"];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,POST,DELETE");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  next();
+});
 
 app.use(express.json());
 
