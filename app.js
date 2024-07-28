@@ -5,7 +5,14 @@ const requestWithFile = require("./clovaOCR");
 
 const app = express();
 const port = 8080;
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:3000/", "https://kkeobi.vercel.app/"], // 여러 URL 허용
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  })
+);
 app.use(express.json());
 
 // 이미지 첨부 이후 대화 스레드 생성 후 첨부된 이미지와 이미지를 텍스트로 추출한 JSON을 담아서 메세지 전송 후 답변 응답
