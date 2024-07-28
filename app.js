@@ -7,7 +7,7 @@ const app = express();
 const port = 8080;
 app.use(
   cors({
-    origin: ["http://localhost:3000/", "https://kkeobi.vercel.app/"], // 여러 URL 허용
+    origin: ["http://localhost:3000", "https://kkeobi.vercel.app"], // 여러 URL 허용
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: false,
     optionsSuccessStatus: 204,
