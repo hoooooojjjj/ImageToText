@@ -51,6 +51,7 @@ const createThread = async (imageUrl, billImgToJson, userInfo) => {
     const fileId = fileResponse.id;
 
     // Create a thread with the uploaded image and text
+    console.log("userInfo : " + userInfo);
     const threadResponse = await openai.beta.threads.create({
       messages: [
         {
