@@ -49,7 +49,6 @@ app.post("/chat", async (req, res) => {
   // 이미지를 JSON으로 추출
   const billImgToJson = await requestWithFile(imageUrl);
 
-  console.log(billImgToJson);
   try {
     // 대화 스레드 생성(이미지와 JSON을 인자로 전달)
     const thread = await createThread(imageUrl, billImgToJson, userInfo);
@@ -62,6 +61,7 @@ app.post("/chat", async (req, res) => {
         message: "Thread created and Message sent successfully.",
         thread,
         response,
+        billImgToJson,
       });
     } else {
       res.status(503).json({ error: "ai does'nt send message." });
