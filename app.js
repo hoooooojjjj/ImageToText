@@ -1,7 +1,8 @@
 const express = require("express");
-const { createThread, sendMessage } = require("./openAI");
 const cors = require("cors");
 const requestWithFile = require("./clovaOCR");
+const createThread = require("./openAI/CreateThread");
+const sendMessage = require("./openAI/SendMessage");
 
 const app = express();
 const port = 8080;
@@ -43,15 +44,28 @@ app.use(express.json());
 
 // 이미지 첨부 이후 대화 스레드 생성 후 첨부된 이미지와 이미지를 텍스트로 추출한 JSON을 담아서 메세지 전송 후 답변 응답
 app.post("/chat", async (req, res) => {
-  // 사용자가 업로드한 이미지 URL
-  const { imageUrl, userInfo } = req.body;
+  // 사용자가 업로드한 이미지 URL, 사용자 정보, 고지서 분석 여부를 body로 받음
+  const { imageUrl, userInfo, isBillAnalysis } = req.body;
 
-  // 이미지를 JSON으로 추출
-  const billImgToJson = await requestWithFile(imageUrl);
+  // 고지서 텍스트 추출 값 받는 변수
+  let billImgToJson;
+
+  // 만약 고지서 분석 여부가 true이면,
+  if (isBillAnalysis) {
+    // 고지서 이미지를 JSON으로 추출 후 billImgToJson에 할당
+    billImgToJson = await requestWithFile(imageUrl);
+  }
 
   try {
     // 대화 스레드 생성(이미지와 JSON을 인자로 전달)
-    const thread = await createThread(imageUrl, billImgToJson, userInfo);
+    const thread = await createThread(
+      imageUrl,
+      // 만약 고지서 분석 여부가 true이면 billImgToJson를 전달
+      billImgToJson && billImgToJson,
+      userInfo,
+      isBillAnalysis
+    );
+
     // 대화 스레드 생성 후 답변 받기
     const response = await sendMessage("", "", thread, true);
 
@@ -59,9 +73,12 @@ app.post("/chat", async (req, res) => {
     if (response) {
       res.json({
         message: "Thread created and Message sent successfully.",
+        // thread id
         thread,
+        // ai 답변
         response,
-        billImgToJson,
+        // 고지서 분석인 경우 고지서 텍스트
+        billImgToJson: billImgToJson && billImgToJson,
       });
     } else {
       res.status(503).json({ error: "ai does'nt send message." });
