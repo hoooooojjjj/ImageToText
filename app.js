@@ -1,7 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const requestWithFile = require("./clovaOCR");
-const createThread = require("./openAI/CreateThread");
+const {
+  createThreadWithImg,
+  createThreadNoImg,
+} = require("./openAI/CreateThread");
 const sendMessage = require("./openAI/SendMessage");
 
 const app = express();
@@ -42,28 +45,21 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// 이미지 첨부 이후 대화 스레드 생성 후 첨부된 이미지와 이미지를 텍스트로 추출한 JSON을 담아서 메세지 전송 후 답변 응답
-app.post("/chat", async (req, res) => {
+// 고지서 분석 요청 -> 대화 스레드 생성 후 첨부된 이미지와 이미지를 텍스트로 추출한 JSON을 담아서 메세지 전송 후 답변 응답
+app.post("/chat/billImg", async (req, res) => {
   // 사용자가 업로드한 이미지 URL, 사용자 정보, 고지서 분석 여부를 body로 받음
-  const { imageUrl, userInfo, isBillAnalysis } = req.body;
+  const { imageUrl, userInfo } = req.body;
 
-  // 고지서 텍스트 추출 값 받는 변수
-  let billImgToJson;
-
-  // 만약 고지서 분석 여부가 true이면,
-  if (isBillAnalysis) {
-    // 고지서 이미지를 JSON으로 추출 후 billImgToJson에 할당
-    billImgToJson = await requestWithFile(imageUrl);
-  }
+  // 고지서 이미지를 JSON으로 추출 후 billImgToJson에 할당
+  const billImgToJson = await requestWithFile(imageUrl);
 
   try {
     // 대화 스레드 생성(이미지와 JSON을 인자로 전달)
-    const thread = await createThread(
+    const thread = await createThreadWithImg(
       imageUrl,
       // 만약 고지서 분석 여부가 true이면 billImgToJson를 전달
-      billImgToJson && billImgToJson,
-      userInfo,
-      isBillAnalysis
+      billImgToJson,
+      userInfo
     );
 
     // 대화 스레드 생성 후 답변 받기
@@ -78,11 +74,32 @@ app.post("/chat", async (req, res) => {
         // ai 답변
         response,
         // 고지서 분석인 경우 고지서 텍스트
-        billImgToJson: billImgToJson && billImgToJson,
+        billImgToJson: billImgToJson,
       });
     } else {
       res.status(503).json({ error: "ai does'nt send message." });
     }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create thread." });
+  }
+});
+
+// 질문하기 요청 -> 대화 스레드 생성 후 스레드 ID 응답
+app.post("/chat/noImg", async (req, res) => {
+  // 사용자가 업로드한 이미지 URL, 사용자 정보, 고지서 분석 여부를 body로 받음
+  const { userInfo } = req.body;
+
+  try {
+    // 대화 스레드 생성
+    const thread = await createThreadNoImg(userInfo);
+
+    // 스레드 생성 후 스레드 id 응답
+    res.json({
+      message: "Thread created and successfully.",
+      // thread id
+      thread,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to create thread." });

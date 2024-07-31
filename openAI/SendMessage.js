@@ -19,8 +19,6 @@ const sendMessage = async (imageUrl, content, threadId, isCreateThread) => {
         });
       }
 
-      // 고지서 분석이 아니라 그냥 질문하기를 누른 경우에는 답변을 반환하지 않도록 하기
-
       // 메세지에 대한 답변 반환
       const stream = openai.beta.threads.runs
         .stream(threadId, {
