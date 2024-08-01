@@ -17,7 +17,20 @@ const convertToPngBuffer = async (buffer) => {
 };
 
 // 파일 업로드를 통한 OCR 요청
-async function requestWithFile(imageUrl) {
+async function requestWithFile(imageUrl, ChatNavigation) {
+  let templateId;
+  switch (ChatNavigation) {
+    case "electricity":
+      templateId = 31041;
+      break;
+    case "gas":
+      templateId = 31358;
+      break;
+    case "water":
+      templateId = 31359;
+      break;
+  }
+
   try {
     // Step 1: Fetch the image as a buffer
     const imageBuffer = await fetchImageBuffer(imageUrl);
@@ -31,7 +44,7 @@ async function requestWithFile(imageUrl) {
         {
           format: "png", // 파일 포맷
           name: "elec_bill", // 파일 이름
-          templateIds: [31041], // 템플릿 ID
+          templateIds: [templateId], // 템플릿 ID
         },
       ],
       requestId: "unique-request-id", // 유니크한 문자열
@@ -63,6 +76,7 @@ async function requestWithFile(imageUrl) {
       res.data.images[0].fields.forEach((field) => {
         data[field.name] = field.inferText;
       });
+
       return data;
     }
   } catch (error) {

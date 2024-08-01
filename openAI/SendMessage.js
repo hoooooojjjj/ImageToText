@@ -3,7 +3,26 @@ const OpenAI = require("openai");
 const openai = new OpenAI();
 
 // assistants에 메세지 보내고 응답 받는 함수
-const sendMessage = async (imageUrl, content, threadId, isCreateThread) => {
+const sendMessage = async (
+  imageUrl,
+  content,
+  threadId,
+  isCreateThread,
+  ChatNavigation
+) => {
+  let assistant_id;
+  switch (ChatNavigation) {
+    case "electricity":
+      assistant_id = "asst_tNqwuLVWp7WJ3S69BVSPn1P9";
+      break;
+    case "gas":
+      assistant_id = "asst_weL7NsmzFf6D2jevPTIS5Psv";
+      break;
+    case "water":
+      assistant_id = "asst_982lcNW9VoJowkpfhK8FSf2l";
+      break;
+  }
+
   return new Promise(async (resolve, reject) => {
     try {
       // 처음 대화 스레드를 생성할 때는 메세지를 보내지 않고 답변만 받음
@@ -22,7 +41,7 @@ const sendMessage = async (imageUrl, content, threadId, isCreateThread) => {
       // 메세지에 대한 답변 반환
       const stream = openai.beta.threads.runs
         .stream(threadId, {
-          assistant_id: "asst_tNqwuLVWp7WJ3S69BVSPn1P9",
+          assistant_id: assistant_id,
         })
         .on("messageDone", async (event) => {
           if (event.content[0].type === "text") {

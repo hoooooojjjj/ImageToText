@@ -48,10 +48,10 @@ app.use(express.json());
 // 고지서 분석 요청 -> 대화 스레드 생성 후 첨부된 이미지와 이미지를 텍스트로 추출한 JSON을 담아서 메세지 전송 후 답변 응답
 app.post("/chat/billImg", async (req, res) => {
   // 사용자가 업로드한 이미지 URL, 사용자 정보, 고지서 분석 여부를 body로 받음
-  const { imageUrl, userInfo } = req.body;
+  const { imageUrl, userInfo, ChatNavigation } = req.body;
 
   // 고지서 이미지를 JSON으로 추출 후 billImgToJson에 할당
-  const billImgToJson = await requestWithFile(imageUrl);
+  const billImgToJson = await requestWithFile(imageUrl, ChatNavigation);
 
   try {
     // 대화 스레드 생성(이미지와 JSON을 인자로 전달)
@@ -59,11 +59,12 @@ app.post("/chat/billImg", async (req, res) => {
       imageUrl,
       // 만약 고지서 분석 여부가 true이면 billImgToJson를 전달
       billImgToJson,
-      userInfo
+      userInfo,
+      ChatNavigation
     );
 
     // 대화 스레드 생성 후 답변 받기
-    const response = await sendMessage("", "", thread, true);
+    const response = await sendMessage("", "", thread, true, ChatNavigation);
 
     // 답변이 있을 경우 응답
     if (response) {
@@ -88,11 +89,11 @@ app.post("/chat/billImg", async (req, res) => {
 // 질문하기 요청 -> 대화 스레드 생성 후 스레드 ID 응답
 app.post("/chat/noImg", async (req, res) => {
   // 사용자가 업로드한 이미지 URL, 사용자 정보, 고지서 분석 여부를 body로 받음
-  const { userInfo } = req.body;
+  const { userInfo, ChatNavigation } = req.body;
 
   try {
     // 대화 스레드 생성
-    const thread = await createThreadNoImg(userInfo);
+    const thread = await createThreadNoImg(userInfo, ChatNavigation);
 
     // 스레드 생성 후 스레드 id 응답
     res.json({
@@ -109,7 +110,7 @@ app.post("/chat/noImg", async (req, res) => {
 // 사용자가 스레드를 생성한 후 메세지를 보내면 메세지에 대한 답변 응답
 app.post("/chat/message", async (req, res) => {
   // 이미지 URL, 메세지 내용, 스레드 ID 받기
-  const { imageUrl, content, threadID } = req.body;
+  const { imageUrl, content, threadID, ChatNavigation } = req.body;
   if (!content) {
     return res.status(400).json({ error: "content is required." });
   }
@@ -120,7 +121,12 @@ app.post("/chat/message", async (req, res) => {
   }
   try {
     // imageUrl, content, threadID를 전달하여 메세지 전송
-    const response = await sendMessage(imageUrl, content, threadID);
+    const response = await sendMessage(
+      imageUrl,
+      content,
+      threadID,
+      ChatNavigation
+    );
 
     // 답변이 있을 경우 응답
     if (response) {
