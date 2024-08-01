@@ -10,19 +10,6 @@ const sendMessage = async (
   isCreateThread,
   ChatNavigation
 ) => {
-  let assistant_id;
-  switch (ChatNavigation) {
-    case "electricity":
-      assistant_id = "asst_tNqwuLVWp7WJ3S69BVSPn1P9";
-      break;
-    case "gas":
-      assistant_id = "asst_weL7NsmzFf6D2jevPTIS5Psv";
-      break;
-    case "water":
-      assistant_id = "asst_982lcNW9VoJowkpfhK8FSf2l";
-      break;
-  }
-
   return new Promise(async (resolve, reject) => {
     try {
       // 처음 대화 스레드를 생성할 때는 메세지를 보내지 않고 답변만 받음
@@ -37,6 +24,20 @@ const sendMessage = async (
           ],
         });
       }
+      let assistant_id;
+      console.log(ChatNavigation);
+      switch (ChatNavigation) {
+        case "electricity":
+          assistant_id = "asst_tNqwuLVWp7WJ3S69BVSPn1P9";
+          break;
+        case "gas":
+          assistant_id = "asst_weL7NsmzFf6D2jevPTIS5Psv";
+          break;
+        case "water":
+          assistant_id = "asst_982lcNW9VoJowkpfhK8FSf2l";
+          break;
+      }
+      console.log(assistant_id);
 
       // 메세지에 대한 답변 반환
       const stream = openai.beta.threads.runs

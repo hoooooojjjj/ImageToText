@@ -125,6 +125,7 @@ app.post("/chat/message", async (req, res) => {
       imageUrl,
       content,
       threadID,
+      false,
       ChatNavigation
     );
 

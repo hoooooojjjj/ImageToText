@@ -76,7 +76,7 @@ async function requestWithFile(imageUrl, ChatNavigation) {
       res.data.images[0].fields.forEach((field) => {
         data[field.name] = field.inferText;
       });
-
+      console.log(data);
       return data;
     }
   } catch (error) {
